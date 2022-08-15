@@ -1,11 +1,25 @@
 const Sequelize = require('sequelize');
 const db = require('./db');
+const {Op} = require('sequelize');
 
 const User = db.define('user', {
-  // Add your Sequelize fields here
-
+  name: {
+    type: Sequelize.STRING,
+    unique: true,
+    allowNull: false,
+    validate: {
+      notEmpty: true
+    }
+  },
+  userType: {
+    type: Sequelize.TEXT,
+    defaultValue: 'STUDENT',
+    allowNull: false,
+    validate: {
+      isIn: [['STUDENT', 'TEACHER']]
+    }
+  }
 });
-
 
 /**
  * We've created the association for you!
@@ -25,4 +39,24 @@ const User = db.define('user', {
 User.belongsTo(User, { as: 'mentor' });
 User.hasMany(User, { as: 'mentees', foreignKey: 'mentorId' });
 
+User.findUnassignedStudents = async function(){
+  return await this.findAll({
+    where: {
+      userType: 'STUDENT',
+      mentorId: null
+    }
+  })
+};
+
+User.findTeachersAndMentees = async function (){
+  return await this.findAll({
+    include: {
+      model: User,
+      as: 'mentees'
+    },
+    where: {
+      userType: 'TEACHER'
+    }
+  })
+}
 module.exports = User;

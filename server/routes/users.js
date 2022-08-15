@@ -2,6 +2,7 @@ const router = require('express').Router();
 const {
   models: { User },
 } = require('../db');
+const { mentorId, mentees } = require('../db/User');
 
 /**
  * All of the routes in this are mounted on /api/users
@@ -17,5 +18,23 @@ const {
  */
 
 // Add your routes here:
+
+router.get('/unassigned', async(req, res, next) => {
+  try{
+    const unassignedMentee =  await User.findUnassignedStudents(mentorId);
+    res.status(200).send(unassignedMentee);
+  }catch(error){
+    next(error);
+  }
+});
+
+router.get('/teachers', async(req, res, next) => {
+  try{
+    const teachersAndStudents =  await User.findTeachersAndMentees(mentees);
+     res.status(200).send(teachersAndStudents);
+  }catch(error){
+    next(error);
+  }
+})
 
 module.exports = router;
