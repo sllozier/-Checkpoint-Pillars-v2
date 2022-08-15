@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 const db = require('./db');
-const {Op} = require('sequelize');
+const { DataTypes } = require('sequelize');
 
 const User = db.define('user', {
   name: {
@@ -17,6 +17,26 @@ const User = db.define('user', {
     allowNull: false,
     validate: {
       isIn: [['STUDENT', 'TEACHER']]
+    }
+  },
+  isStudent:{
+    type: DataTypes.VIRTUAL,
+    get(){
+      if(`${this.userType}` === 'STUDENT'){
+        return true
+      } else {
+        return false
+      }
+    }
+  },
+  isTeacher:{
+    type: DataTypes.VIRTUAL,
+    get(){
+      if(`${this.userType}` === 'TEACHER'){
+        return true
+      } else {
+        return false
+      }
     }
   }
 });
@@ -58,5 +78,12 @@ User.findTeachersAndMentees = async function (){
       userType: 'TEACHER'
     }
   })
-}
+};
+//^^^^ returns all teachers assinged mentees in an array.
+User.beforeUpdate(person => {
+  if(person.userType === 'TEACHER' || person.mentees.length < 0 && person.mentorId === null){
+    return person
+  }
+  
+})
 module.exports = User;

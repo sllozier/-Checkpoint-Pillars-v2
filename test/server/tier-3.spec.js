@@ -8,7 +8,7 @@ const {
 const _app = require('../../server/app');
 const app = require('supertest')(_app);
 
-describe.only('Tier 3: Virtual Fields, Route Parameters, DELETE Routes', () => {
+describe('Tier 3: Virtual Fields, Route Parameters, DELETE Routes', () => {
   describe('Sequelize', () => {
     beforeEach(async () => {
       await db.sync({ force: true });
@@ -81,7 +81,7 @@ describe.only('Tier 3: Virtual Fields, Route Parameters, DELETE Routes', () => {
     });
   });
 
-  xdescribe('Express', () => {
+  describe('Express', () => {
     let users;
 
     beforeEach(async () => {
