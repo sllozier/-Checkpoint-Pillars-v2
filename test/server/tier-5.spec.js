@@ -9,7 +9,7 @@ const {
 const _app = require('../../server/app');
 const app = require('supertest')(_app);
 
-describe.only('Tier 5: Sequelize Update Hook, PUT Routes, Express Error Handling', () => {
+describe('Tier 5: Sequelize Update Hook, PUT Routes, Express Error Handling', () => {
   describe('Sequelize', () => {
     before(() => {
       console.log(
@@ -101,7 +101,7 @@ describe.only('Tier 5: Sequelize Update Hook, PUT Routes, Express Error Handling
     });
   });
 
-  xdescribe('Express', () => {
+  describe('Express', () => {
     let users;
     beforeEach(async () => {
       await db.sync({ force: true });

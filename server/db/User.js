@@ -80,10 +80,49 @@ User.findTeachersAndMentees = async function (){
   })
 };
 //^^^^ returns all teachers assinged mentees in an array.
-User.beforeUpdate(person => {
-  if(person.userType === 'TEACHER' || person.mentees.length < 0 && person.mentorId === null){
-    return person
+
+User.prototype.getPeers = async function (){
+    return await User.findAll({
+      where: {
+        mentorId: this.mentorId,
+        id: {
+          [Sequelize.Op.not]: this.id
+        }
+      }
+    });
   }
-  
-})
+//^^^^ returns all that have the same mentor id and the id is not the same as their id.
+//meaning they are students.
+
+User.beforeUpdate(async(person) => {
+  const mentor = await User.findByPk(person.mentorId);
+   const mentees = await User.findAll({
+    where: {
+      mentorId: person.id
+    }
+   });
+   if(mentor && mentor.userType === 'STUDENT'){
+    console.log('FIRST')
+    return Promise.reject(
+      new Error('This is not a Teacher, silly! This is a student!')
+    );
+   } else if (mentor && person.userType === 'TEACHER'){
+    console.log('SECOND')
+    return Promise.reject(
+      new Error('This student has a teacher, they cannot be a teacher.')
+    );
+   }else if (mentees.length && person.userType === 'STUDENT'){
+    console.log('THIRD')
+    return Promise.reject(
+      new Error('This teacher has a student, they cannot be a student.')
+    );
+   }
+});
+//^^^^ Okie-dokie, so grab that mentorId because that is a mentor!
+//findall where the id is a person.id not a mentorId - this is a student!
+//if person isn't a teacher, they can't be a mentor and Promise.reject with 
+//Error message. If user has a mentor and that mentor is a teacher, reject.
+//If there are mentees(not empty array), and that mentee is a student, reject.
+
+
 module.exports = User;

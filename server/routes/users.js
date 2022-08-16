@@ -2,8 +2,10 @@ const router = require('express').Router();
 const {
   models: { User },
 } = require('../db');
-const { mentorId, mentees, userId } = require('../db/User');
-
+const { mentorId, mentees } = require('../db/User');
+const Sequelize = require('sequelize');
+const { Op } = require('sequelize');
+const { RowDescriptionMessage } = require('pg-protocol/dist/messages');
 /**
  * All of the routes in this are mounted on /api/users
  * For instance:
@@ -76,8 +78,44 @@ router.post('/', async(req, res, next) => {
         return res.status(201).send(newUser);
       }
     }catch(error){
+    next(error);
+  }
+});
+//^^^^ variable to hold currentUser. If that user exists, send 409.
+//If not, create the new user and send 201 with new user!
+
+router.put('/:id', async(req, res, next) => {
+  try{
+    const user = await User.findByPk(req.params.id);
+    if(!user){
+      return res.sendStatus(404);
+     }
+    else {
+     const updatedUser =  await user.update(req.body);
+     return res.status(200).send(updatedUser);
+    }
+  }catch(error){
     next(error)
   }
 })
+//^^^^ variable for all users, if user does not exists, 404 status. if it does,
+//then, update user and send 200 status.
+
+router.get('/', async(req, res, next) => {
+  try{
+    const userName =  await User.findAll({
+      where: {
+        name: {
+          [Sequelize.Op.iLike] : `%${req.query.name}%`
+        }
+      }
+    });
+      res.status(200).send(userName);
+  }catch(error){
+    next(error);
+  }
+});
+//^^^^ find all the user-names that match the req.query.name - op.iLike 
+//includes strings that are case-insensitive.
 
 module.exports = router;
